@@ -10,12 +10,12 @@
   "author": "Denis Bogachev <denesey@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yenesey/sqlite-tree-storage.git"
+    "url": "git+https://github.com/yenesey/sqlite-tree-store.git"
   },
   "bugs": {
-    "url": "https://github.com/yenesey/sqlite-tree-storage/issues"
+    "url": "https://github.com/yenesey/sqlite-tree-store/issues"
   },
-  "homepage": "https://github.com/yenesey/sqlite-tree-storage#readme",
+  "homepage": "https://github.com/yenesey/sqlite-tree-store#readme",
   "license": "MIT",
   "devDependencies": {},
   "keywords": [
