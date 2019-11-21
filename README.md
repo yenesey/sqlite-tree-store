@@ -6,11 +6,17 @@ This module suitable in several cases:
 
 All CRUD operations performs through JS:
 - create
+```javascript
 tree.node = {path: null}
+```
 - update 
+```javascript
 tree.node.path = '/mnt/big/user'
+```
 - delete
+```javascript
 delete tree.node.path
+```
 
 ## Usage
 
