@@ -1,0 +1,29 @@
+{
+  "name": "sqlite-tree-store",
+  "version": "1.0.0",
+  "description": "Simple document store over SQLite",
+  "main": "index",
+  "scripts": {},
+  "dependencies": {
+    "better-sqlite3": "^5.4.3"
+  },
+  "author": "Denis Bogachev <denesey@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yenesey/sqlite-tree-storage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yenesey/sqlite-tree-storage/issues"
+  },
+  "homepage": "https://github.com/yenesey/sqlite-tree-storage#readme",
+  "license": "MIT",
+  "devDependencies": {},
+  "keywords": [
+    "sqlite",
+    "tree",
+    "store",
+    "document",
+    "json",
+    "object"
+  ]
+}
