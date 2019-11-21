@@ -37,4 +37,12 @@ config.ssl._.sertData = fs.readFileSync(config.ssl.certFile)
 // in some cases you need to know real db node id (rowid)
 // ._.  - also opens acces to node meta-data
 config.mail._.port.id   //  -> rowid of <port>
-````
+```
+
+### Play with command line
+
+Type
+```bash
+\> node cli
+```
+and feel free to do some tests manually
