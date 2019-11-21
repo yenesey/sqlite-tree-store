@@ -18,11 +18,17 @@ and feel free to do some tests manually
 ```javascript
 const treeStore = require('sqlite-tree-store')
 const tree = treeStore('mydb.db', 'system', true) 
-/*
-<system> - is a common name for tables:
-<system_nodes>, <system_values> and a view <system_recursive>
+// <system> - is a common name for tables:
+// <system_nodes>, <system_values> and a view <system_recursive>
+// <true> - is a forceArrays param (default=false) for storing and reading arrays
 */
 const sys = tree()
+/*
+    tree() - actually has two params: (rootId, depth)
+    so
+    tree(0, 1) - will build only first level nodes from root
+    tree() - build whole tree deep
+*/
 
 // All CRUD operations performs through JS:
 
