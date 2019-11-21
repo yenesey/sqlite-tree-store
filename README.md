@@ -4,20 +4,6 @@ This module suitable in several cases:
 - simple handy schema-less store for quick prototyping
 - store config data instead of .json files
 
-All CRUD operations performs through JS:
-- create
-```javascript
-tree.node = {path: null}
-```
-- update 
-```javascript
-tree.node.path = '/mnt/big/user'
-```
-- delete
-```javascript
-delete tree.node.path
-```
-
 ## Usage
 
 ### Play with command line (CLI)
@@ -37,6 +23,8 @@ const tree = treeStore('mydb.db', 'system', true)
 <system_nodes>, <system_values> and a view <system_recursive>
 */
 const sys = tree()
+
+// All CRUD operations performs through JS:
 
 sys.config = { 
     mail: { host: 'exchange.myoffice.com', port: 25 }, 
