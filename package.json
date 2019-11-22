@@ -1,6 +1,6 @@
 {
   "name": "sqlite-tree-store",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Simple document store over SQLite",
   "main": "index",
   "scripts": {},
