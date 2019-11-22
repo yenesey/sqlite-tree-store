@@ -44,8 +44,9 @@ All CRUD operations performs through JS operations with objects & arrays:
 }
 ```
 now press `ctrl+D` to exit program
-next run you can use this config because it auto-saved in database
-once again
+next run you can use this config because it **auto-saved in database**
+
+once again:
 ```js
 \> node cli mydb.db system`
 ```
@@ -62,9 +63,9 @@ you will see saved config
   }
 }
 ```
-now you can change/add/delete any node or value of <t>
+now you can add, modify, delete any node or value of <t>
 
-in some cases you need disable this auto-save-db feature:
+in some cases you'll need to disable this **auto-db-save** feature:
 
 type
 ```js
