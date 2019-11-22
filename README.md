@@ -14,9 +14,7 @@ const t = tree() // -- 't' is a root of tree, restored from db (or created empty
 ```
 Explain **treeStore** params:
 
-'mydb.db' - if not exisis, file will be created in current directory
-
-NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **better-sqlite3** database instead of file name*
+'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **better-sqlite3** database instead of file name*
 
 'system' - is a common name for tables: [system_nodes], [system_values] and a view [system_recursive]. Existance of tables checked at every startup.
 
