@@ -78,9 +78,12 @@ check actual node value by typing `t.config.mail.port`
 \> t.config.mail.port
 10025
 ```
-restart program (`ctrl+D`) and check actual saved value
+restart program (`ctrl+D`) and check actual **saved** value
+
+if all done right, port = 10025 is not saved
 ```js
 \> t.config.mail.port
+25
 ```
 
 in some cases you need to know real db node id (rowid)
