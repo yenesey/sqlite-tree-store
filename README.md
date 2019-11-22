@@ -24,7 +24,7 @@ true - is a forceArrays (exerimental) param (default = false) for storing and re
 
 so
 
-**tree(0, 1)** - will build only first level nodes from root (cause root always is zero)
+**tree(0, 1)** - will build only first level nodes from root (root always is zero)
   
 **tree()** - build whole tree deep
 
