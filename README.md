@@ -12,19 +12,21 @@ const treeStore = require('sqlite-tree-store')
 const tree = treeStore('mydb.db', 'system', true)
 const t = tree() // -- restore tree from db (or create empty one)
 ```
+Explain treeStore params:
+
 'mydb.db' - if not exisis, file will be created in current directory
 
-'system' - is a common name for tables: [system_nodes], [system_values] and a view [system_recursive]
+'system' - is a common name for tables: [system_nodes], [system_values] and a view [system_recursive]. Existance of tables checked at every startup.
 
-true - is a forceArrays(exerimental) param (default = false) for storing and reading arrays 
+true - is a forceArrays (exerimental) param (default = false) for storing and reading arrays 
 
-function tree() - actually has two params: (rootId, depth)
+**function tree()** - actually has [optional] params: (rootId, depth)
 
 so
 
-    tree(0, 1) - will build only first level nodes from root
+**tree(0, 1)** - will build only first level nodes from root (cause root always is zero)
   
-    tree() - build whole tree deep
+**tree()** - build whole tree deep
 
 
 ### Play with command line (CLI)
