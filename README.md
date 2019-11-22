@@ -7,9 +7,6 @@ This module is suitable in cases when you need:
 
 
 ## Example
-
-### Let the code speak for me:
-
 ```js
 const treeStore = require('sqlite-tree-store')
 const tree = treeStore('mydb.db', 'system', true)
