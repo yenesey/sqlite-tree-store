@@ -29,7 +29,7 @@ so
 **tree()** - build whole tree deep
 
 
-## Play with command line (example continue)
+## Play with command line (continue example)
 
 In module folder type 
 ```js
