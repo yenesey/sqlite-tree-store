@@ -23,16 +23,19 @@ true - is a forceArrays(exerimental) param (default = false) for storing and rea
 ```js
 const t = tree()
 ```
+`
 function tree() - actually has two params: (rootId, depth)
 so
   tree(0, 1) - will build only first level nodes from root
   tree() - build whole tree deep
-
+`
 
 ### Play with command line (CLI)
 
 In module folder type 
-`\> node cli mydb.db system`
+```js
+\> node cli mydb.db system
+```
 and feel free to do some tests, shown below, manually by copy&paste
 
 All CRUD operations performs through JS operations with objects & arrays:
@@ -46,9 +49,13 @@ t.config = {
 now press `ctrl+D` to exit program
 next run you can use this config because it auto-saved in database
 once again
-`\> node cli mydb.db system`
+```js
+\> node cli mydb.db system`
+```
 and type 
-`\> t`
+```js
+\> t
+```
 you will see saved config
 ```js
 {
@@ -60,24 +67,30 @@ you will see saved config
 ```
 now you can change/add/delete any node or value
 type
-`t.config.mail.port = 2525`
+```js
+\> t.config.mail.port = 2525
+```
 
 in some cases you need disable this auto-save-db feature:
-`t.config.mail._.port = 10025`
-sign `._`  semantically means "break binding to the database"
-check actual value by typing
-`t.config.mail.port`
+type
 ```js
-\>t.config.mail.port
+\> t.config.mail._.port = 10025
+```
+sign `._`  semantically means "break binding to the database"
+check actual value by typing `t.config.mail.port`
+```js
+\> t.config.mail.port
 10025
 ```
 restart program (`ctrl+D`) and check actual value
-`t.config.mail.port`
+```js
+\> t.config.mail.port
+```
 
 in some cases you need to know real db node id (rowid)
 sign `._`  - also opens acces to node meta-data
 ```js
-config.mail._.port.id
+\> config.mail._.port.id
 ```
 
 # license
