@@ -20,13 +20,13 @@ if (!path.isAbsolute(fileName)) {
 }
 
 if (!fs.existsSync(fileName)) {
-	console.log(`Seems given file [${mark(fileName)}] is not exists.\nAttempted to create it now... `)
+	console.log(`It seems like given file [${mark(fileName)}] is not exists.\nAttempted to create now... `)
 }
 
 const treeBuilder = require('./index')
 const tree = treeBuilder(fileName, commonName, true)
 
-console.log('*** interactive \'tree\' edit ***\n' +
+console.log('*** Interactive \'tree\' editor ***\n' +
 'type:\n > ' + mark('t') +
 ' - view tree\n > ' + mark('keys(t)') +
 ' - view keys\n > ' + mark('save(t.<node>, <fileName>)') +

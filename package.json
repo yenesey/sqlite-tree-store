@@ -4,6 +4,9 @@
   "description": "Simple document store over SQLite",
   "main": "index",
   "scripts": {},
+  "bin": {
+    "tree-store": "cli.js"
+  },
   "dependencies": {
     "better-sqlite3": "^5.4.3"
   },
