@@ -1,16 +1,16 @@
 # SQLite Tree Store
 ## A simple document store over SQLite
-This module is suitable in cases when you need:
+This module is suitable when you need:
 - a simple schema-less store for quick prototyping (like "mongo on minimals")
 - to store config data in SQLite instead of .json files
-- combined store of tree & relational data
+- combined store of document (tree) & relational data models
 
 
 ## Example
 ```js
 const treeStore = require('sqlite-tree-store')
 const tree = treeStore('mydb.db', 'system', true)
-const t = tree()
+const t = tree() // -- restore tree from db (or create empty one)
 ```
 'mydb.db' - if not exisis, file will be created in current directory
 
@@ -22,9 +22,9 @@ function tree() - actually has two params: (rootId, depth)
 
 so
 
-  tree(0, 1) - will build only first level nodes from root
+    tree(0, 1) - will build only first level nodes from root
   
-  tree() - build whole tree deep
+    tree() - build whole tree deep
 
 
 ### Play with command line (CLI)
@@ -38,7 +38,7 @@ and feel free to do some tests, shown below, manually by copy&paste
 All CRUD operations performs through JS operations with objects & arrays:
 
 ```js
-t.config = { 
+\> t.config = { 
     mail: { host: 'exchange.myoffice.com', port: 25 }, 
     ssl: { certFile:'main.pfx' }
 }
@@ -62,24 +62,22 @@ you will see saved config
   }
 }
 ```
-now you can change/add/delete any node or value
-type
-```js
-\> t.config.mail.port = 2525
-```
+now you can change/add/delete any node or value of <t>
 
 in some cases you need disable this auto-save-db feature:
+
 type
 ```js
 \> t.config.mail._.port = 10025
 ```
 sign `._`  semantically means "break binding to the database"
-check actual value by typing `t.config.mail.port`
+
+check actual node value by typing `t.config.mail.port`
 ```js
 \> t.config.mail.port
 10025
 ```
-restart program (`ctrl+D`) and check actual value
+restart program (`ctrl+D`) and check actual saved value
 ```js
 \> t.config.mail.port
 ```
