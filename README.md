@@ -94,6 +94,7 @@ in some cases you need to know real db node id (rowid)
 sign `._`  - also opens acces to node meta-data:
 ```js
 \> config.mail._.port.id
+4
 ```
 
 # license
