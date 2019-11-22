@@ -50,7 +50,7 @@ next run you can use this config because it **auto-saved in database**
 
 once again:
 ```js
-\> node cli mydb.db system`
+\> node cli mydb.db system
 ```
 and type 
 ```js
