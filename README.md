@@ -10,9 +10,9 @@ This module is suitable when you need:
 ```js
 const treeStore = require('sqlite-tree-store')
 const tree = treeStore('mydb.db', 'system', true)
-const t = tree() // -- restore tree from db (or create empty one)
+const t = tree() // -- 't' is a root of tree, restored from db (or created empty one)
 ```
-Explain treeStore params:
+Explain **treeStore** params:
 
 'mydb.db' - if not exisis, file will be created in current directory
 
@@ -29,13 +29,13 @@ so
 **tree()** - build whole tree deep
 
 
-### Play with command line (CLI)
+## Play with command line (example continue)
 
 In module folder type 
 ```js
 \> node cli mydb.db system
 ```
-and feel free to do some tests, shown below, manually by copy&paste
+and feel free to do some tests, shown below, manually copy&paste
 
 All CRUD operations performed through JavaScript ones with objects & arrays:
 
