@@ -37,7 +37,7 @@ In module folder type
 ```
 and feel free to do some tests, shown below, manually by copy&paste
 
-All CRUD operations performs through JavaScript ones with objects & arrays:
+All CRUD operations performed through JavaScript ones with objects & arrays:
 
 ```js
 \> t.config = { 
