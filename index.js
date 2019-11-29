@@ -2,7 +2,7 @@
 
 const sqlite = require('better-sqlite3')
 
-module.exports = function (db, commonName, forceArrays = false) {
+module.exports = function (db, commonName) {
 	// -
 	const _NODES = commonName + '_nodes'
 	const _VALUES = commonName + '_values'
@@ -11,16 +11,16 @@ module.exports = function (db, commonName, forceArrays = false) {
 		db = sqlite(db)
 	}
 
-	(function () { // self-calling at startup, ensures given db has proper structures
+	(function () { // self-calling at startup, ensures db has proper structures
 		let existance = (name, type) => `SELECT name FROM sqlite_master WHERE type='${type}' AND name='${name}'`
 
 		let entities = [
 			{
 				exists: existance(_NODES, 'table'),
 				definitions: [
-					`CREATE TABLE ${_NODES} (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, idp INTEGER REFERENCES ${_NODES} (id) ON DELETE CASCADE, name STRING NOT NULL)`,
+					`CREATE TABLE ${_NODES} (id INTEGER PRIMARY KEY ASC AUTOINCREMENT, idp INTEGER REFERENCES ${_NODES} (id) ON DELETE CASCADE, name STRING NOT NULL, inf STRING)`,
 					`CREATE UNIQUE INDEX ${_NODES}_unique ON ${_NODES} (idp, name)`,
-					`INSERT INTO ${_NODES} (id, idp, name) values (0, 0, 'root')`
+					`INSERT INTO ${_NODES} (id, idp, name) values (0, 0, '_root_')`
 				]
 			},
 			{
@@ -75,8 +75,8 @@ module.exports = function (db, commonName, forceArrays = false) {
 		}
 	})()
 
-	let selectNodes = db.prepare(`select * from ${_NODES} where idp = ? and id != idp`)
-	let insertNode = db.prepare(`insert into ${_NODES} (idp, name) values ($idp, $name)`)
+	let selectNodes = db.prepare(`select id, name, inf from ${_NODES} where idp = ? and id != idp`)
+	let insertNode = db.prepare(`insert into ${_NODES} (idp, name, inf) values ($idp, $name, $inf)`)
 	let deleteNode = db.prepare(`delete from ${_NODES} where id = $id`)
 
 	let selectValues = db.prepare(`select value from ${_VALUES} where id = ?`)
@@ -101,27 +101,37 @@ module.exports = function (db, commonName, forceArrays = false) {
 
 		return new Proxy(source, {
 			set (target, key, value, receiver) {
-				if (typeof value === 'boolean') value = (value) ? 1 : 0
+				// types below are handled in special manner:
+				let _value = value
+				if (typeof value === 'object' && Reflect.has(value, 'length')) {
+					meta[key].type = 'array'
+				} else if (typeof value === 'boolean') {
+					meta[key].type = 'bool'
+					_value = (value) ? 1 : 0 // - sqlite don't care about bool's
+				}
 
 				if (Reflect.has(target, key)) {
 					if (typeof value !== 'object') {
-						updateValue.run({ id: meta[key].id, value: value })
+						if (typeof value !== 'boolean' && meta[key].type === 'bool') {
+							// handle if value, previously was a bool, became not bool (remove meta e.t.c)
+							delete meta[key].type
+							// deleteMeta.run({ id: meta[key].id })
+						}
+						updateValue.run({ id: meta[key].id, value: _value })
 					} else {
 						for (let subKey in value) {
 							receiver[key][subKey] = value[subKey]
 						}
 					}
 				} else {
-					let info = insertNode.run({ idp: id, name: key })
+					let info = insertNode.run({ idp: id, name: key, inf: meta[key].type })
 					let _id = info.lastInsertRowid
 					meta[key].id = _id
 					// Object.defineProperty(meta[key], 'id', { enumerable: true, writable: false, value: _id  })
 					if (typeof value !== 'object') {
-						insertValue.run({ id: _id, value: value })
+						insertValue.run({ id: _id, value: _value })
 					} else {
-						let isArray = forceArrays && Reflect.has(value, 'length')
-						let node = createNode(_id, isArray ? [] : {})
-						if (isArray) insertValue.run({ id: _id, value: '[]' })
+						let node = createNode(_id, (meta[key].type === 'array') ? [] : {})
 						for (let subKey in value) {
 							node[subKey] = value[subKey] // assign proxified 'node' causes recursive call of 'set'
 						}
@@ -161,22 +171,25 @@ module.exports = function (db, commonName, forceArrays = false) {
 		when (<id> == 0) - build from root
 		when (<depth> is not defined or 0) - build whole tree deep
 	*/
-		function _build (id, level) { // returns: value, [...values] or Proxy(<node>)
+		function _build (id, level, inf) { // returns: value, [...values] or Proxy(<node>)
 			let children = selectNodes.all(id)
 			let values = selectValues.all(id)
 			let value
-			if (values.length === 0) value = null
-			else if (values.length === 1) value = values[0].value
-			else value = values.map(el => el.value) // fallback to Array when multiple vals
+			if (values.length === 0) {
+				value = null
+			} else if (inf === 'bool') {
+				value = Boolean(values[0].value)
+			} else {
+				value = values[0].value
+			}	
 			if (id && children.length === 0) {
-				// no children means, there is a 'leaf'
 				return value
 			}
 			if (depth && level >= depth) return
-			let isArray = forceArrays && (value === '[]')  // children.length && children.reduce((res, el) =>  res && !isNaN(el.name), true)
-			let node = createNode(id, isArray ? [] : {})
+		
+			let node = createNode(id, inf === 'array' ? [] : {})
 			for (let child of children) {
-				let childNode = _build(child.id, level + 1) // <-- note: recursive
+				let childNode = _build(child.id, level + 1, child.inf) // <-- note: recursive
 				node._[child.name].id = child.id
 				node._[child.name] = childNode
 			}
