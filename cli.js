@@ -9,15 +9,15 @@ const { inspect } = require('util')
 const mark = (text) => `\x1b[32m${text}\x1b[39m` // => `\x1b[32m${text}\x1b[37m`
 
 var fileName = process.argv[2]
-var commonName = process.argv[3]
+var tableName = process.argv[3]
 
-if (!(fileName && commonName)) {
-	console.log('USAGE:\n\\>node cli <dbFileName.ext> <commonName>')
+if (!(fileName && tableName)) {
+	console.log('USAGE:\n\\>node cli <dbFileName.ext> <tableName>')
 	process.exit(-1)
 }
 
 if (!path.isAbsolute(fileName)) {
-	fileName = path.join(require.main.path, fileName)
+	fileName = path.join(__dirname, fileName)
 }
 
 if (!fs.existsSync(fileName)) {
@@ -25,7 +25,7 @@ if (!fs.existsSync(fileName)) {
 }
 
 const treeBuilder = require('./index')
-const tree = treeBuilder(fileName, commonName, true)
+const tree = treeBuilder(fileName, tableName)
 
 console.log('*** Interactive \'tree\' editor ***\n' +
 'type:\n > ' + mark('t') +
