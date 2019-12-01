@@ -16,15 +16,17 @@ Explain **treeStore** params:
 
 'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **better-sqlite3** database instead of file name*
 
-'system' - is a common name for tables: 'system_nodes', 'system_values', 'system_meta' and a view 'system_recursive'. Existance of theese entities in database checked at every startup.
+'system' - is a common name for table: 'system', and a view 'system_recursive'. Existance of theese entities in database checked at every startup.
 
-**function tree()** - actually has [optional] params: (rootId, depth)
+**function tree()** - actually has [optional] params: (path: Array, depth: Number)
 
 so
 
-**tree(0, 1)** - will build only first level nodes from root (root always is zero)
-  
 **tree()** - build whole tree deep
+**tree([], 1)** - build only 1st level nodes from '\'
+**tree(['config'])** - build whole node '\config\*'
+**tree(['config', 'mail'])** - build whole node '\config\mail\*'
+
 
 
 ## Play with command line (continue example)
@@ -35,7 +37,7 @@ In module folder type
 ```
 and feel free to do some tests, shown below, manually copy&paste
 
-All CRUD operations performed through JavaScript ones with objects & arrays:
+All CRUD operations performed through JavaScript (objects & arrays):
 
 ```js
 \> t.config = { 

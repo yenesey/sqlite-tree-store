@@ -66,6 +66,7 @@ module.exports = function (db, tableName) {
 		}
 	})()
 
+	let selectNodeId = db.prepare(`select id from ${tableName} where idp = ? and name = ?`)
 	let selectNodes = db.prepare(`select * from ${tableName} where idp = ? and id != idp`)
 	let insertNode = db.prepare(`insert into ${tableName} (idp, name, type, value) values ($idp, $name, $type, $value)`)
 	let deleteNode = db.prepare(`delete from ${tableName} where id = $id`)
@@ -95,7 +96,7 @@ module.exports = function (db, tableName) {
 				let primitive
 				if (type === 'object') {
 					primitive = null
-					if (Reflect.has(value, 'length')) type = 'array' // -- instanceof Array not work in <repl>
+					if (Reflect.has(value, 'length')) type = 'array' // - instanceof Array not work in <repl>
 				} else if (type === 'boolean') {
 					primitive = (value) ? 1 : 0 // - sqlite don't care about bool's
 				} else {
@@ -111,9 +112,9 @@ module.exports = function (db, tableName) {
 					node = receiver[key]
 				}
 
-				if (primitive === null) { // object || array
+				if (primitive === null) { // - object || array
 					for (let subKey in value) {
-						node[subKey] = value[subKey] // assign proxified 'node' causes recursive 'set' call 
+						node[subKey] = value[subKey] // - assign proxified 'node' causes recursive 'set' call 
 					}
 					value = node
 				}
@@ -141,12 +142,21 @@ module.exports = function (db, tableName) {
 		})
 	}
 
-	function build (id = 0, depth) {
-	/*
-		recursive build from node.id==<id>, to given <depth> level
-		when (<id> == 0) - build from root
-		when (<depth> is not defined or 0) - build whole tree deep
-	*/
+	function build (path = [], depth) {
+		let id = 0
+		
+		if (path.length > 0) { 
+			for (let name of path) {
+				let node = selectNodeId.get(id, name)
+				if (node) {
+					id = node.id
+				} else {
+					throw new Error('The specified path does not exist')
+				}
+			}
+		}
+
+
 		function _build (id, level, type) {
 			if (depth && level >= depth) return null
 			let children = selectNodes.all(id)
