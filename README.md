@@ -1,7 +1,7 @@
 # SQLite Tree Store
 ## A simple document store over SQLite
 This module is suitable when you need:
-- a simple schema-less store for quick prototyping (like "mongo on minimals")
+- a simple schema-less store for quick prototyping (like "minimal mongo")
 - to store config data in SQLite instead of .json files
 - combined store of document (tree) & relational data models
 
@@ -23,8 +23,11 @@ Explain **treeStore** params:
 so
 
 **tree()** - build whole tree deep
+
 **tree([], 1)** - build only 1st level nodes from '\'
+
 **tree(['config'])** - build whole node '\config\*'
+
 **tree(['config', 'mail'])** - build whole node '\config\mail\*'
 
 
