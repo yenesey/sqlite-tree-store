@@ -10,6 +10,9 @@
   "dependencies": {
     "better-sqlite3": "^5.4.3"
   },
+  "devDependencies": {
+    "chai": "^4.2.0"
+  },
   "author": "Denis Bogachev <denesey@gmail.com>",
   "repository": {
     "type": "git",
@@ -20,7 +23,6 @@
   },
   "homepage": "https://github.com/yenesey/sqlite-tree-store#readme",
   "license": "MIT",
-  "devDependencies": {},
   "keywords": [
     "sqlite",
     "tree",

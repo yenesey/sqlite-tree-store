@@ -20,8 +20,8 @@ module.exports = function (db, tableName) {
 				]
 			},
 			{
-				exists: existance(tableName + '_recursive', 'view'),
-				definitions: [`CREATE VIEW ${tableName}_recursive AS\n` +
+				exists: existance('v_' + tableName, 'view'),
+				definitions: [`CREATE VIEW v_${tableName} AS\n` +
 					`WITH RECURSIVE nested (id, level, path)\n` +
 					`AS (\n` +
 					`    SELECT \n` +
@@ -66,7 +66,7 @@ module.exports = function (db, tableName) {
 		}
 	})()
 
-	let selectNodeId = db.prepare(`select id from ${tableName} where idp = ? and name = ?`)
+	let selectNodeId = db.prepare(`select id, type from ${tableName} where idp = ? and name = ?`)
 	let selectNodes = db.prepare(`select * from ${tableName} where idp = ? and id != idp`)
 	let insertNode = db.prepare(`insert into ${tableName} (idp, name, type, value) values ($idp, $name, $type, $value)`)
 	let deleteNode = db.prepare(`delete from ${tableName} where id = $id`)
@@ -94,7 +94,7 @@ module.exports = function (db, tableName) {
 			set (target, key, value, receiver) {
 				let type = typeof value
 				let primitive
-				if (type === 'object') {
+				if (Boolean(value) && type === 'object') {
 					primitive = null
 					if (Reflect.has(value, 'length')) type = 'array' // - instanceof Array not work in <repl>
 				} else if (type === 'boolean') {
@@ -124,7 +124,11 @@ module.exports = function (db, tableName) {
 
 			get (target, key, receiver) {
 				if (Reflect.has(target, key)) {
-					return target[key] || createNode(meta[key].id)
+					return Reflect.get(target, key)
+					if (target[key] !== null) {
+						return target[key]
+					}
+					return createNode(meta[key].id) // (meta[key].type === 'array') ? [] : {}
 				} else if (key === '_') {
 					return meta
 				}
@@ -164,8 +168,13 @@ module.exports = function (db, tableName) {
 			let node = createNode(id, type === 'array' ? [] : {})
 			for (let child of children) {
 				let childNode = _build(child.id, level + 1, child.type)
+
 				if (childNode === null) {
-					if (child.type === 'boolean') {
+					if (child.type === 'array') {
+						childNode = []
+					} else if (child.type === 'object') {
+						childNode = {}
+					} else if (child.type === 'boolean') {
 						childNode = Boolean(child.value)
 					} else if (child.type === 'string') {
 						childNode = String(child.value)

@@ -3,7 +3,7 @@
 This module is suitable when you need:
 - a simple schema-less store for quick prototyping (like "minimal mongo")
 - to store config data in SQLite instead of .json files
-- combined store of document (tree) & relational data models
+- combined store of document (object tree) & relational data
 
 
 ## Example
@@ -16,9 +16,9 @@ Explain **treeStore** params:
 
 'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **better-sqlite3** database instead of file name*
 
-'system' - is a common name for table: 'system', and a view 'system_recursive'. Existance of theese entities in database checked at every startup.
+'system' - is a common name for table: 'system', and a view 'v_system'. Existance of theese entities in database checked at every startup.
 
-**function tree()** - actually has [optional] params: (path: Array, depth: Number)
+**function tree()** - has [optional] params: (path: Array, depth: Number)
 
 so
 
