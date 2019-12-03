@@ -117,7 +117,7 @@ module.exports = function(db, tableName = 'tree') {
 				} else {
 					primitive = value
 				}
-				
+
 				let node
 				if (!Reflect.has(target, key)) {
 					meta[key].id = insertNode.run({ idp: id, name: key, type: type, value: primitive }).lastInsertRowid
@@ -179,6 +179,16 @@ module.exports = function(db, tableName = 'tree') {
 			}
 		}
 
+		function normalValue(id, type, value) {
+			switch (type) {
+			case 'array': return createNode(id, [])
+			case 'object': return createNode(id, {})
+			case 'boolean':	return Boolean(value)
+			case 'string': return String(value)
+			default: return value
+			}
+		}
+		//todo: rethink this routines in the way of mandatory types
 		function _build (id, level, type) {
 			if (depth <= level) return null
 
@@ -189,21 +199,11 @@ module.exports = function(db, tableName = 'tree') {
 			for (let child of children) {
 				let nodeBuilt = _build(child.id, level + 1, child.type)
 				node._[child.name].id = child.id
-				node._[child.name] = nodeBuilt || normalValue(child)
+				node._[child.name] = nodeBuilt || normalValue(child.id, child.type, child.value)
 			}
 			return node
 		}
 		return _build(id, 0)
 	}
 	return tree
-}
-
-function normalValue({ type, value }) {
-	switch (type) {
-	case 'array': return []
-	case 'object': return {}
-	case 'boolean':	return Boolean(value)
-	case 'string': return String(value)
-	default: return value
-	}
 }
