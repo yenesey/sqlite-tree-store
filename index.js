@@ -1,7 +1,22 @@
 'use strict'
+/**
+ * sqlite-tree-store
+ * Copyright(c) 2019 Dennis B. <denesey@agmail.com>
+ * MIT Licensed
+ */
 
 const sqlite = require('better-sqlite3')
 
+ /**
+ * @typedef {import('better-sqlite3')} BetterSqlite3
+ */
+/**
+ * The the main and only 'sqlite-tree-store' export
+ *
+ * @param {(string|BetterSqlite3)} db Full/relative database file name, or BetterSqlite3.Database instance
+ * @param {string} tableName Name of the table, where opened/created model is stored
+ * @return {Proxy} result
+*/
 module.exports = function (db, tableName) {
 	if (typeof db === 'string') {
 		db = sqlite(db)
@@ -125,10 +140,6 @@ module.exports = function (db, tableName) {
 			get (target, key, receiver) {
 				if (Reflect.has(target, key)) {
 					return Reflect.get(target, key)
-					if (target[key] !== null) {
-						return target[key]
-					}
-					return createNode(meta[key].id) // (meta[key].type === 'array') ? [] : {}
 				} else if (key === '_') {
 					return meta
 				}
@@ -160,30 +171,27 @@ module.exports = function (db, tableName) {
 			}
 		}
 
-
+		function normalValue({ type, value }) {
+			switch (type) {
+			case 'array': return []
+			case 'object': return {}
+			case 'boolean':	return Boolean(value)
+			case 'string': return String(value)
+			default: return value
+			}
+		}	
+		
 		function _build (id, level, type) {
-			if (depth && level >= depth) return null
+			if (depth <= level) return null
+
 			let children = selectNodes.all(id)
-			if (id && children.length === 0) return null
+			if (id !== 0 && children.length === 0) return null
+
 			let node = createNode(id, type === 'array' ? [] : {})
 			for (let child of children) {
-				let childNode = _build(child.id, level + 1, child.type)
-
-				if (childNode === null) {
-					if (child.type === 'array') {
-						childNode = []
-					} else if (child.type === 'object') {
-						childNode = {}
-					} else if (child.type === 'boolean') {
-						childNode = Boolean(child.value)
-					} else if (child.type === 'string') {
-						childNode = String(child.value)
-					} else {
-						childNode = child.value
-					}
-				}
+				let nodeBuilt = _build(child.id, level + 1, child.type)
 				node._[child.name].id = child.id
-				node._[child.name] = childNode
+				node._[child.name] = nodeBuilt || normalValue(child)
 			}
 			return node
 		}

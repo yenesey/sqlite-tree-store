@@ -10,8 +10,8 @@ if (fs.existsSync(TESTDB)) fs.unlinkSync(TESTDB)
 
 const sqlite = require('better-sqlite3')
 const db = sqlite(TESTDB)
-const treeBuilder = require('./index')
-const tree = treeBuilder(db, 'sys')
+const treeStore = require('./index')
+const tree = treeStore(db, 'sys')
 
 var t = tree()
 
@@ -24,8 +24,8 @@ t.node = {
 	bool: true,
 	numstr: '7',
 	array: [1,2,3,4, '5'],
-	subnode: {
-		flag: false
+	subnode: { 
+		flag: false 
 	}
 }
 
