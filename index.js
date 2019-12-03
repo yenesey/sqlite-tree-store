@@ -1,23 +1,23 @@
 'use strict'
 /**
  * sqlite-tree-store
- * Copyright(c) 2019 Dennis B. <denesey@agmail.com>
+ * Copyright(c) 2019 Dennis B. <denesey@gmail.com>
  * MIT Licensed
  */
 
 const sqlite = require('better-sqlite3')
 
- /**
- * @typedef {import('better-sqlite3')} BetterSqlite3
- */
 /**
- * The the main and only 'sqlite-tree-store' export
- *
+* @typedef {import('better-sqlite3')} BetterSqlite3
+*/
+
+/**
+ * The the main and only module export
  * @param {(string|BetterSqlite3)} db Full/relative database file name, or BetterSqlite3.Database instance
  * @param {string} tableName Name of the table, where opened/created model is stored
- * @return {Proxy} result
+ * @return {tree} result
 */
-module.exports = function (db, tableName) {
+module.exports = function(db, tableName = 'tree') {
 	if (typeof db === 'string') {
 		db = sqlite(db)
 	}
@@ -157,7 +157,15 @@ module.exports = function (db, tableName) {
 		})
 	}
 
-	function build (path = [], depth) {
+
+	/**
+	* Build tree store from database
+	* 
+	* @param {string[]} [path] (optional) array of strings representing path to node
+	* @param {number} [depth] (optional) build to desired depth
+	* @return {Proxy} result
+	*/
+	function tree (path = [], depth) {
 		let id = 0
 		
 		if (path.length > 0) { 
@@ -171,16 +179,6 @@ module.exports = function (db, tableName) {
 			}
 		}
 
-		function normalValue({ type, value }) {
-			switch (type) {
-			case 'array': return []
-			case 'object': return {}
-			case 'boolean':	return Boolean(value)
-			case 'string': return String(value)
-			default: return value
-			}
-		}	
-		
 		function _build (id, level, type) {
 			if (depth <= level) return null
 
@@ -197,6 +195,15 @@ module.exports = function (db, tableName) {
 		}
 		return _build(id, 0)
 	}
+	return tree
+}
 
-	return build
+function normalValue({ type, value }) {
+	switch (type) {
+	case 'array': return []
+	case 'object': return {}
+	case 'boolean':	return Boolean(value)
+	case 'string': return String(value)
+	default: return value
+	}
 }

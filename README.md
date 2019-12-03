@@ -9,27 +9,30 @@ This module is suitable when you need:
 ## Example
 ```js
 const treeStore = require('sqlite-tree-store')
-const tree = treeStore('mydb.db', 'system')
+const build = treeStore('mydb.db', 'system')
 const t = tree() // -- 't' is a root of tree, restored from db (or created empty one)
 ```
 Explain **treeStore** params:
 
-'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **better-sqlite3** database instead of file name*
+'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **BetterSqlite3.Database** instance in place of file name*
 
-'system' - is a common name for table: 'system', and a view 'v_system'. Existance of theese entities in database checked at every startup.
+'system' - is a common name for table: 'system', and a view 'v_system'. theese entities will be created at startup if not exists.
 
-**function tree()** - has [optional] params: (path: Array, depth: Number)
+**function tree([path], [depth]) : Proxy**
+
+  [path] (optional) array of strings representing path to node
+
+  [depth] (optional) build to desired depth
 
 so
 
 **tree()** - build whole tree deep
 
-**tree([], 1)** - build only 1st level nodes from '\'
+**tree([], 1)** - build only 1st level nodes from root
 
 **tree(['config'])** - build whole node '\config\*'
 
 **tree(['config', 'mail'])** - build whole node '\config\mail\*'
-
 
 
 ## Play with command line (continue example)

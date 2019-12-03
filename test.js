@@ -23,7 +23,7 @@ t.json = json
 t.node = {
 	bool: true,
 	numstr: '7',
-	array: [1,2,3,4, '5'],
+	array: [1, 2, 3, 4, '5'],
 	subnode: { 
 		flag: false 
 	}
