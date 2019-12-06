@@ -62,6 +62,7 @@ module.exports = function(db, tableName = 'tree') {
 					`    nested.path,\n` +
 					`    n.id,\n` +
 					`    replace(hex(zeroblob(level * 6)), '00', ' ') || n.name AS name,\n` +
+					`    n.type,\n` +
 					`    n.value\n` +
 					`FROM \n` +
 					`    nested,\n` +
@@ -86,20 +87,35 @@ module.exports = function(db, tableName = 'tree') {
 	let insertNode = db.prepare(`insert into ${tableName} (idp, name, type, value) values ($idp, $name, $type, $value)`)
 	let deleteNode = db.prepare(`delete from ${tableName} where id = $id`)
 	let updateValue = db.prepare(`update ${tableName} set value = $value, type = $type where id = $id`)
+	let renameNode = db.prepare(`update ${tableName} set name = $name where id = $id`)
 
 	function createNode (id, source = {}) {
+
 		// meta-data for 'source' id, type and other...
 		const meta = new Proxy({}, {
 			set (target, key, value, receiver) {
-				if (key === 'id') {
-					Object.defineProperty(target, 'id', { enumerable: true, writable: false, value: value  })
-					return true
-				}
-				return Reflect.set(source, key, value) // !!! - proxify setter to original node <source> (not meta)
+				return Reflect.set(source, key, value) // note: set original node <source> (not target or receiver)
 			},
 			get (target, key, receiver) {
 				if (!Reflect.has(target, key)) { // bypass non-existent meta keys
-					Object.defineProperty(target, key, { enumerable: false, configurable: true, value: {} })
+					Object.defineProperty(target, key, {
+						enumerable: false,
+						configurable: true, 
+						value: {
+							id: null,
+							rename: function(newKey) {
+								if (newKey in source || !(key in source)) return null
+								source[newKey] = source[key]
+								Object.defineProperty(target, newKey, { enumerable: false, configurable: true, value: target[key] })
+			
+								renameNode.run({ id: this.id, name: newKey })
+			
+								delete source[key]
+								delete target[key]
+								return source[newKey]
+							}
+						}
+					})
 				}
 				return Reflect.get(target, key)
 			}
@@ -109,9 +125,17 @@ module.exports = function(db, tableName = 'tree') {
 			set (target, key, value, receiver) {
 				let type = typeof value
 				let primitive
-				if (Boolean(value) && type === 'object') {
-					primitive = null
-					if (Reflect.has(value, 'length')) type = 'array' // - instanceof Array not work in <repl>
+				if (type === 'object') {
+					if (value.constructor === Array) {
+						type = 'array'
+						primitive = null
+					} else if (value.constructor === Date) {
+						type = 'date'
+						primitive = value.toISOString()
+					} else {
+						type = 'object'
+						primitive = null
+					}
 				} else if (type === 'boolean') {
 					primitive = (value) ? 1 : 0 // - sqlite don't care about bool's
 				} else {
@@ -157,6 +181,16 @@ module.exports = function(db, tableName = 'tree') {
 		})
 	}
 
+	function normalValue(id, type, value) {
+		switch (type) {
+		case 'array': return createNode(id, [])
+		case 'object': return createNode(id, {})
+		case 'date': return new Date(value)
+		case 'boolean':	return Boolean(value)
+		case 'string': return String(value)
+		default: return value
+		}
+	}
 
 	/**
 	* Build tree store from database
@@ -179,16 +213,6 @@ module.exports = function(db, tableName = 'tree') {
 			}
 		}
 
-		function normalValue(id, type, value) {
-			switch (type) {
-			case 'array': return createNode(id, [])
-			case 'object': return createNode(id, {})
-			case 'boolean':	return Boolean(value)
-			case 'string': return String(value)
-			default: return value
-			}
-		}
-		//todo: rethink this routines in the way of mandatory types
 		function _build (id, level, type) {
 			if (depth <= level) return null
 

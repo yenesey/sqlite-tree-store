@@ -35,6 +35,7 @@ console.log('*** Interactive \'tree\' editor ***\n' +
 ' - load from file\npress Ctrl+D to stop')
 
 const context = repl.start({
+	useGlobal: true,
 	writer: (result) => inspect(result, { colors: true, depth: 2 })
 }).context
 context.keys = Object.keys

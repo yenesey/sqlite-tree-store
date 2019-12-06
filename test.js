@@ -3,23 +3,21 @@
 /**
  * setup environment
  */
-const expect = require('chai').expect
-const fs = require('fs')
 const TESTDB = 'test.db'
-if (fs.existsSync(TESTDB)) fs.unlinkSync(TESTDB)
-
+const fs = require('fs')
+const expect = require('chai').expect
 const sqlite = require('better-sqlite3')
 const treeStore = require('./index')
 
+if (fs.existsSync(TESTDB)) fs.unlinkSync(TESTDB)
 const db = sqlite(TESTDB)
 const tree = treeStore(db, 'sys')
-
-var t = tree()
 
 /**
  * setup test data
  */
 const json = JSON.parse(fs.readFileSync('package.json'))
+var t = tree()
 t.json = json
 t.node = {
 	bool: true,
@@ -44,12 +42,15 @@ expect(t.node.bool).to.be.a('boolean')
 expect(t.node.numstr).to.be.a('string')
 expect(t.node.array).to.be.a('array')
 expect(t.node.array[4]).to.be.a('string').to.be.equal('5')
-t.emptyObject.date = '01-01-1981'
-t.emptyArray.push('01-01-1981')
+var dt = new Date()
+t.emptyObject.date = dt
+t.emptyArray.push(dt)
 
 t = tree() // -- rebuild whole tree from db
-expect(t.emptyObject.date).to.be.equal('01-01-1981')
-expect(t.emptyArray[0]).to.be.equal('01-01-1981')
+expect(t.emptyObject.date).to.be.a('date')
+expect(t.emptyArray[0]).to.be.a('date')
+expect(t.emptyObject.date.getTime()).to.be.equal(dt.getTime())
+expect(t.emptyArray[0].getTime()).to.be.equal(dt.getTime())
 
 t = tree(['json']) // -- rebuild exact given node from db
 expect(t).to.deep.equal(json)
@@ -60,7 +61,11 @@ expect(t).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
 t = tree([], 2) // -- rebuild root node 2 levels deep
 expect(t.node).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
 
+t._.node.rename('node_new') // rename node -> node_new
+expect(t.node_new).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
+expect(t.node).to.be.undefined
+
 console.log('All tests passed!')
 console.log('Cleanup...')
 db.close()
-//fs.unlinkSync(TESTDB)
+fs.unlinkSync(TESTDB)
