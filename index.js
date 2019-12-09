@@ -89,8 +89,44 @@ module.exports = function(db, tableName = 'tree') {
 	let updateValue = db.prepare(`update ${tableName} set value = $value, type = $type where id = $id`)
 	let renameNode = db.prepare(`update ${tableName} set name = $name where id = $id`)
 
-	function createNode (id, source = {}) {
+	// to db value & type conversion helper
+	function _toDbType (value) {
+		let type = typeof value
+		let primitive
+		if (type === 'object') {
+			if (value.constructor === Array) {
+				type = 'array'
+				primitive = null
+			} else if (value.constructor === Date) {
+				type = 'date'
+				primitive = value.toISOString()
+			} else {
+				type = 'object'
+				primitive = null
+			}
+		} else if (type === 'boolean') {
+			primitive = (value) ? 1 : 0 // - sqlite don't care about bool's
+		} else {
+			primitive = value
+		}
+		return {primitive, type}
+	}
+	
+	// from db value & type conversion helper
+	function _fromDbType({id, type, value}) { 
+		switch (type) {
+		case 'array': return createNode(id, [])
+		case 'object': return createNode(id, {})
+		case 'date': return new Date(value)
+		case 'boolean':	return Boolean(value)
+		case 'string': return String(value)
+		default: return value
+		}
+	}
 
+
+	function createNode (id, source = {}) {
+		
 		// meta-data for 'source' id, type and other...
 		const meta = new Proxy({}, {
 			set (target, key, value, receiver) {
@@ -123,25 +159,7 @@ module.exports = function(db, tableName = 'tree') {
 
 		return new Proxy(source, {
 			set (target, key, value, receiver) {
-				let type = typeof value
-				let primitive
-				if (type === 'object') {
-					if (value.constructor === Array) {
-						type = 'array'
-						primitive = null
-					} else if (value.constructor === Date) {
-						type = 'date'
-						primitive = value.toISOString()
-					} else {
-						type = 'object'
-						primitive = null
-					}
-				} else if (type === 'boolean') {
-					primitive = (value) ? 1 : 0 // - sqlite don't care about bool's
-				} else {
-					primitive = value
-				}
-
+				let { primitive, type } = _toDbType(value)
 				let node
 				if (!Reflect.has(target, key)) {
 					meta[key].id = insertNode.run({ idp: id, name: key, type: type, value: primitive }).lastInsertRowid
@@ -181,17 +199,6 @@ module.exports = function(db, tableName = 'tree') {
 		})
 	}
 
-	function normalValue(id, type, value) {
-		switch (type) {
-		case 'array': return createNode(id, [])
-		case 'object': return createNode(id, {})
-		case 'date': return new Date(value)
-		case 'boolean':	return Boolean(value)
-		case 'string': return String(value)
-		default: return value
-		}
-	}
-
 	/**
 	* Build tree store from database
 	* 
@@ -201,33 +208,23 @@ module.exports = function(db, tableName = 'tree') {
 	*/
 	function tree (path = [], depth) {
 		let id = 0
-		
-		if (path.length > 0) { 
-			for (let name of path) {
-				let node = selectNodeId.get(id, name)
-				if (node) {
-					id = node.id
-				} else {
-					throw new Error('The specified path does not exist')
-				}
-			}
+
+		for (let name of path) {
+			let node = selectNodeId.get(id, name)
+			if (!node) throw new Error('The specified path does not exist')
+			id = node.id
 		}
 
-		function _build (id, level, type) {
-			if (depth <= level) return null
-
-			let children = selectNodes.all(id)
-			if (id !== 0 && children.length === 0) return null
-
-			let node = createNode(id, type === 'array' ? [] : {})
+		function _build (node, children, level) {
 			for (let child of children) {
-				let nodeBuilt = _build(child.id, level + 1, child.type)
+				let nv = _fromDbType(child)
 				node._[child.name].id = child.id
-				node._[child.name] = nodeBuilt || normalValue(child.id, child.type, child.value)
+				node._[child.name] = (depth <= level + 1) ? nv : _build(nv, selectNodes.all(child.id), level + 1)
 			}
 			return node
 		}
-		return _build(id, 0)
+		return _build(createNode(id, {}), selectNodes.all(id), 0)
+
 	}
 	return tree
 }

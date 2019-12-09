@@ -11,8 +11,8 @@ const mark = (text) => `\x1b[32m${text}\x1b[39m` // => `\x1b[32m${text}\x1b[37m`
 var fileName = process.argv[2]
 var tableName = process.argv[3]
 
-if (!(fileName && tableName)) {
-	console.log('USAGE:\n\\>node cli <dbFileName.ext> <tableName>')
+if (!(fileName)) {
+	console.log('usage:\n\\>node cli <db_file_name> [<table_name>]')
 	process.exit(-1)
 }
 
@@ -25,7 +25,7 @@ if (!fs.existsSync(fileName)) {
 }
 
 const treeBuilder = require('./index')
-const tree = treeBuilder(fileName, tableName)
+const tree = treeBuilder(fileName, tableName || undefined)
 
 console.log('*** Interactive \'tree\' editor ***\n' +
 'type:\n > ' + mark('t') +

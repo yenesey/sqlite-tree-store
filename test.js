@@ -16,6 +16,7 @@ const tree = treeStore(db, 'sys')
 /**
  * setup test data
  */
+console.time('All tests passed!')
 const json = JSON.parse(fs.readFileSync('package.json'))
 var t = tree()
 t.json = json
@@ -65,7 +66,7 @@ t._.node.rename('node_new') // rename node -> node_new
 expect(t.node_new).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
 expect(t.node).to.be.undefined
 
-console.log('All tests passed!')
+console.timeEnd('All tests passed!')
 console.log('Cleanup...')
 db.close()
 fs.unlinkSync(TESTDB)

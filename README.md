@@ -16,7 +16,7 @@ Explain **treeStore** params:
 
 'mydb.db' - if not exisis, file will be created in current directory. NOTE: *module uses **better-sqlite3** under the hood, so you can pass opened **BetterSqlite3.Database** instance in place of file name*
 
-'system' - is a common name for table: 'system', and a view 'v_system'. theese entities will be created at startup if not exists.
+'system' - is a common name for table: 'system', and a view 'v_system'. theese entities created at startup (if not exists).
 
 **function tree([path], [depth]) : Proxy**
 
@@ -39,7 +39,7 @@ so
 
 In module folder type 
 ```js
-\> node cli mydb.db system
+\> node cli mydb.db
 ```
 and feel free to do some tests, shown below, manually copy&paste
 
@@ -57,7 +57,7 @@ next run you can use this config because it **auto-saved in database**
 
 once again:
 ```js
-\> node cli mydb.db system
+\> node cli mydb.db
 ```
 and type 
 ```js
