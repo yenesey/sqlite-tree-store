@@ -217,14 +217,18 @@ module.exports = function(db, tableName = 'tree') {
 
 		function _build (node, children, level) {
 			for (let child of children) {
-				let nv = _fromDbType(child)
+				let nodeValue = _fromDbType(child)
 				node._[child.name].id = child.id
-				node._[child.name] = (depth <= level + 1) ? nv : _build(nv, selectNodes.all(child.id), level + 1)
+				if ((child.type === 'object' || child.type === 'array') && !(depth <= level + 1)) {
+					node._[child.name] = _build(nodeValue, selectNodes.all(child.id), level + 1)
+				} else {
+					node._[child.name] = nodeValue					
+				}
 			}
 			return node
 		}
 		return _build(createNode(id, {}), selectNodes.all(id), 0)
-
 	}
+
 	return tree
 }

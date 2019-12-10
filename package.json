@@ -1,9 +1,11 @@
 {
   "name": "sqlite-tree-store",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Simple document store over SQLite",
   "main": "index",
-  "scripts": {},
+  "scripts": {
+    "test": "node test"
+  },
   "bin": {
     "tree-store": "cli.js"
   },

@@ -9,9 +9,13 @@ const expect = require('chai').expect
 const sqlite = require('better-sqlite3')
 const treeStore = require('./index')
 
-if (fs.existsSync(TESTDB)) fs.unlinkSync(TESTDB)
-const db = sqlite(TESTDB)
+cleanup()
+const db = sqlite(TESTDB, { memory: process.argv[2] === 'memory' ? true : false })
 const tree = treeStore(db, 'sys')
+
+function cleanup () {
+	if (fs.existsSync(TESTDB)) fs.unlinkSync(TESTDB)
+}
 
 /**
  * setup test data
@@ -69,4 +73,4 @@ expect(t.node).to.be.undefined
 console.timeEnd('All tests passed!')
 console.log('Cleanup...')
 db.close()
-fs.unlinkSync(TESTDB)
+cleanup()
