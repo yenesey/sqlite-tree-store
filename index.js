@@ -82,28 +82,41 @@ module.exports = function(db, tableName = 'tree') {
 		}
 	})()
 
-	let selectNodeId = db.prepare(`select id, type from ${tableName} where idp = ? and name = ?`)
+	let selectNode = db.prepare(`select * from ${tableName} where idp = ? and name = ?`)
 	let selectNodes = db.prepare(`select * from ${tableName} where idp = ? and id != idp`)
 	let insertNode = db.prepare(`insert into ${tableName} (idp, name, type, value) values ($idp, $name, $type, $value)`)
 	let deleteNode = db.prepare(`delete from ${tableName} where id = $id`)
 	let updateValue = db.prepare(`update ${tableName} set value = $value, type = $type where id = $id`)
 	let renameNode = db.prepare(`update ${tableName} set name = $name where id = $id`)
 
+
+	function _setHiddenProperty(target, key, value) {
+		Object.defineProperty(target, key, { enumerable: false, configurable: true, value: value })
+	}
+
+	function _renameProperty(node, meta, oldKey, newKey) {
+		if (newKey in node || !(oldKey in node) || !('id' in meta[oldKey])) return null
+		node[newKey] = node[oldKey]
+		_setHiddenProperty(meta, newKey, meta[oldKey])
+		renameNode.run({ id: meta[oldKey].id, name: newKey })
+		delete node[oldKey]
+		delete meta[oldKey]
+		return node[newKey]
+	}
+
 	// to db value & type conversion helper
 	function _toDbType (value) {
 		let type = typeof value
-		let primitive
-		if (type === 'object') {
+		let primitive = null
+		if (value && type === 'object') {
 			if (value.constructor === Array) {
 				type = 'array'
-				primitive = null
 			} else if (value.constructor === Date) {
 				type = 'date'
 				primitive = value.toISOString()
-			} else {
-				type = 'object'
-				primitive = null
 			}
+		} else if (type === 'function') {
+			type = 'func'
 		} else if (type === 'boolean') {
 			primitive = (value) ? 1 : 0 // - sqlite don't care about bool's
 		} else {
@@ -113,7 +126,7 @@ module.exports = function(db, tableName = 'tree') {
 	}
 	
 	// from db value & type conversion helper
-	function _fromDbType({id, type, value}) { 
+	function _fromDbType({type, value, id}) { 
 		switch (type) {
 		case 'array': return createNode(id, [])
 		case 'object': return createNode(id, {})
@@ -126,31 +139,17 @@ module.exports = function(db, tableName = 'tree') {
 
 
 	function createNode (id, source = {}) {
-		
-		// meta-data for 'source' id, type and other...
+
+		// meta-data for id, type, rename and other maybe...
 		const meta = new Proxy({}, {
 			set (target, key, value, receiver) {
 				return Reflect.set(source, key, value) // note: set original node <source> (not target or receiver)
 			},
 			get (target, key, receiver) {
 				if (!Reflect.has(target, key)) { // bypass non-existent meta keys
-					Object.defineProperty(target, key, {
-						enumerable: false,
-						configurable: true, 
-						value: {
-							id: null,
-							rename: function(newKey) {
-								if (newKey in source || !(key in source)) return null
-								source[newKey] = source[key]
-								Object.defineProperty(target, newKey, { enumerable: false, configurable: true, value: target[key] })
-			
-								renameNode.run({ id: this.id, name: newKey })
-			
-								delete source[key]
-								delete target[key]
-								return source[newKey]
-							}
-						}
+					_setHiddenProperty(target, key, { 
+						id: null,
+						rename: (newKey) =>	_renameProperty(source, target, key, newKey)
 					})
 				}
 				return Reflect.get(target, key)
@@ -159,17 +158,18 @@ module.exports = function(db, tableName = 'tree') {
 
 		return new Proxy(source, {
 			set (target, key, value, receiver) {
+				// todo: node creation is not always necessary (use _toDbType)
 				let { primitive, type } = _toDbType(value)
 				let node
 				if (!Reflect.has(target, key)) {
 					meta[key].id = insertNode.run({ idp: id, name: key, type: type, value: primitive }).lastInsertRowid
-					node = createNode(meta[key].id, (type === 'array') ? [] : {}) 
+					node = createNode(meta[key].id, (type === 'array') ? [] : {})
 				} else {
 					updateValue.run({ id: meta[key].id, type: type, value: primitive })
 					node = receiver[key]
 				}
 
-				if (primitive === null) { // - object || array
+				if (primitive === null) { // - object or array
 					for (let subKey in value) {
 						node[subKey] = value[subKey] // - assign proxified 'node' causes recursive 'set' call 
 					}
@@ -207,12 +207,11 @@ module.exports = function(db, tableName = 'tree') {
 	* @return {Proxy} result
 	*/
 	function tree (path = [], depth) {
-		let id = 0
 
+		let root = { id: 0, type: 'object' }
 		for (let name of path) {
-			let node = selectNodeId.get(id, name)
-			if (!node) throw new Error('The specified path does not exist')
-			id = node.id
+			root = selectNode.get(root.id, name)
+			if (!root) throw new Error('The specified path does not exist')
 		}
 
 		function _build (node, children, level) {
@@ -227,7 +226,7 @@ module.exports = function(db, tableName = 'tree') {
 			}
 			return node
 		}
-		return _build(createNode(id, {}), selectNodes.all(id), 0)
+		return _build(_fromDbType(root), selectNodes.all(root.id), 0)
 	}
 
 	return tree

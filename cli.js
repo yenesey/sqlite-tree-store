@@ -10,9 +10,10 @@ const mark = (text) => `\x1b[32m${text}\x1b[39m` // => `\x1b[32m${text}\x1b[37m`
 
 var fileName = process.argv[2]
 var tableName = process.argv[3]
+var pathToNode = process.argv[4] ? process.argv[4].split('/') : []
 
 if (!(fileName)) {
-	console.log('usage:\n\\>node cli <db_file_name> [<table_name>]')
+	console.log('usage:\n\\>node cli <db_file_name> [<table_name> [path/to/node]]')
 	process.exit(-1)
 }
 
@@ -21,7 +22,7 @@ if (!path.isAbsolute(fileName)) {
 }
 
 if (!fs.existsSync(fileName)) {
-	console.log(`It seems like given file [${mark(fileName)}] is not exists.\nAttempted to create now... `)
+	console.log(`It seems like db file [${mark(fileName)}] is not exists.\nAttempt to create it now... `)
 }
 
 const treeBuilder = require('./index')
@@ -39,7 +40,7 @@ const context = repl.start({
 	writer: (result) => inspect(result, { colors: true, depth: 2 })
 }).context
 context.keys = Object.keys
-context.t = tree()
+context.t = tree(pathToNode)
 context.save = function (node, fileName) {
 	writeFileSync(fileName, JSON.stringify(node, '', '    '))
 	return true
