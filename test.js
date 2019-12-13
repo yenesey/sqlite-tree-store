@@ -10,7 +10,7 @@ const sqlite = require('better-sqlite3')
 const treeStore = require('./index')
 
 cleanup()
-const db = sqlite(TESTDB, { memory: process.argv[2] === 'memory' ? true : false })
+const db = sqlite(TESTDB, { memory: process.argv[2] === 'memory' })
 const tree = treeStore(db, 'sys')
 
 function cleanup () {
@@ -21,7 +21,7 @@ function cleanup () {
  * setup test data
  */
 console.time('All tests passed!')
-const json = process.config // JSON.parse(fs.readFileSync('package.json'))
+const json = process.config
 var t = tree()
 t.json = json
 t.node = {
