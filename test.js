@@ -21,16 +21,16 @@ function cleanup () {
  * setup test data
  */
 console.time('All tests passed!')
-const json = JSON.parse(fs.readFileSync('package.json'))
+const json = process.config // JSON.parse(fs.readFileSync('package.json'))
 var t = tree()
 t.json = json
 t.node = {
 	bool: true,
 	numstr: '7',
 	array: [1, 2, 3, 4, '5'],
-	subnode: { 
-		flag: false 
-	},
+	subnode: {
+		flag: false
+	}
 }
 t.emptyObject = {}
 t.emptyArray = []
