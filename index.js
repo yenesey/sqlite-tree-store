@@ -111,6 +111,7 @@ module.exports = function (db, tableName = 'tree') {
 		switch (value.constructor) {
 		case Array: type = 'array'; break
 		case Object: break
+		case Buffer: type = 'buffer'; primitive = value; break
 		case Function: primitive = value.toString(); break
 		case Date: type = 'date'; primitive = value.toISOString(); break
 		case Boolean: type = 'boolean'; primitive = (value) ? 1 : 0; break
@@ -125,6 +126,7 @@ module.exports = function (db, tableName = 'tree') {
 		switch (type) {
 		case 'array': return createNode(id, [])
 		case 'object': return createNode(id, {})
+		case 'buffer': return Buffer.from(value)
 		case 'date': return new Date(value)
 		case 'function': return String(value) // -- dummy
 		case 'boolean':	return Boolean(value)

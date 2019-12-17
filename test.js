@@ -22,8 +22,10 @@ function cleanup () {
  */
 console.time('All tests passed!')
 const json = process.config
+const buffer  = Buffer.from([0, 0, 0, 0, 0, 0, 128, 255])
 var t = tree()
 t.json = json
+t.buffer = buffer
 t.node = {
 	bool: true,
 	numstr: '7',
@@ -41,12 +43,14 @@ t.emptyArray = []
 
 t = tree() // -- rebuild whole tree from db
 expect(t).to.be.a('object')
-expect(t.json).to.deep.equal(json)
 expect(t._.node.id).to.be.a('number')
 expect(t.node.bool).to.be.a('boolean')
 expect(t.node.numstr).to.be.a('string')
 expect(t.node.array).to.be.a('array')
 expect(t.node.array[4]).to.be.a('string').to.be.equal('5')
+expect(t.json).to.be.deep.equal(json)
+expect(t.buffer).to.be.deep.equal(buffer)
+
 var dt = new Date()
 t.emptyObject.date = dt
 t.emptyArray.push(dt)
