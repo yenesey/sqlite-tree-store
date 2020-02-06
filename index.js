@@ -66,7 +66,7 @@ module.exports = function (db, tableName = 'tree') {
 					`    n.value\n` +
 					`FROM \n` +
 					`    nested,\n` +
-					`    ${tableName} n\n` + 
+					`    ${tableName} n\n` +
 					`WHERE\n` +
 					`    n.id = nested.id\n` +
 					`ORDER BY \n` +
@@ -96,7 +96,7 @@ module.exports = function (db, tableName = 'tree') {
 	function _renameProperty (node, meta, oldKey, newKey) {
 		if (newKey in node || !(oldKey in node) || !('id' in meta[oldKey])) return null
 		node[newKey] = node[oldKey]
-		_setHiddenProperty(meta, newKey, meta[oldKey])
+		meta[newKey].id = meta[oldKey].id
 		renameNode.run({ id: meta[oldKey].id, name: newKey })
 		delete node[oldKey]
 		delete meta[oldKey]
@@ -136,7 +136,6 @@ module.exports = function (db, tableName = 'tree') {
 	}
 
 	function createNode (id, source = {}) {
-
 		// meta-data for id, type, rename and other maybe...
 		const meta = new Proxy({}, {
 			set (target, key, value, receiver) {
@@ -144,9 +143,9 @@ module.exports = function (db, tableName = 'tree') {
 			},
 			get (target, key, receiver) {
 				if (!Reflect.has(target, key)) { // bypass non-existent meta keys
-					_setHiddenProperty(target, key, { 
+					_setHiddenProperty(target, key, {
 						id: null,
-						rename: (newKey) =>	_renameProperty(source, target, key, newKey)
+						rename: (newKey) =>	_renameProperty(source, meta, key, newKey)
 					})
 				}
 				return Reflect.get(target, key)
@@ -165,7 +164,7 @@ module.exports = function (db, tableName = 'tree') {
 					updateValue.run({ id: meta[key].id, type: type, value: primitive })
 					if (primitive === null) node = receiver[key]
 				}
-				meta[key].type = type
+				// meta[key].type = type
 
 				if (node) {
 					for (let subKey in value) {
@@ -204,7 +203,7 @@ module.exports = function (db, tableName = 'tree') {
 	* @return {Proxy} result
 	*/
 	function tree (path = [], depth) {
-
+		// -
 		let root = { id: 0, type: 'object' }
 		for (let name of path) {
 			root = selectNode.get(root.id, name)

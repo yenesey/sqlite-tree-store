@@ -71,8 +71,10 @@ t = tree([], 2) // -- rebuild root node 2 levels deep
 expect(t.node).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
 
 t._.node.rename('node_new') // rename node -> node_new
+t._.node_new.rename('node_new2') // rename again
+
 t = tree([], 2)
-expect(t.node_new).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
+expect(t.node_new2).to.deep.equal({ array: [], bool: true, numstr: '7', subnode: {} })
 expect(t.node).to.be.undefined
 
 console.timeEnd('All tests passed!')
